@@ -1,8 +1,8 @@
 {
-    "name": "oclazyload",
+    "name": "gandhiz.oclazyload",
     "description": "Load modules on demand (lazy load) with angularJS",
     "main": "dist/ocLazyLoad.js",
-    "version:": "1.1.0",
+    "version": "2.0.0",
     "author": "Olivier Combe <olivier.combe@gmail.com>",
     "license": "MIT",
     "homepage": "https://github.com/gandhiz/ocLazyLoad",

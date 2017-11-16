@@ -1,7 +1,7 @@
 /**
- * oclazyload - Load modules on demand (lazy load) with angularJS
- * @version v
- * @link https://github.com/ocombe/ocLazyLoad
+ * gandhiz.oclazyload - Load modules on demand (lazy load) with angularJS
+ * @version v2.0.0
+ * @link https://github.com/gandhiz/ocLazyLoad
  * @license MIT
  * @author Olivier Combe <olivier.combe@gmail.com>
  */

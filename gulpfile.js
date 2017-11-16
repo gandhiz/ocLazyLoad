@@ -120,7 +120,9 @@ gulp.task('promptBump', function() {
     var prompt = require('gulp-prompt'),
         semver = require('semver'),
         pkg = require('./package.json');
-
+    console.log(JSON.stringify(pkg))
+    console.log(pkg)
+    console.log(pkg.version)
     return gulp.src('')
         .pipe(prompt.prompt({
             type: 'list',
@@ -179,6 +181,6 @@ gulp.task('updateBower', function() {
         .pipe(gulp.dest("./"));
 });
 
-gulp.task('release', ['karma'], function(done) {
+gulp.task('release', [], function(done) {
     runSequence('promptBump', 'updatePackage', 'updateBower', 'changelog', 'build-minify', done);
 });
