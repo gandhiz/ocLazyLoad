@@ -121,27 +121,26 @@ gulp.task('promptBump', function() {
         semver = require('semver'),
         pkg = require('./package.json');
 
-    //return gulp.src('')
-    //    .pipe(prompt.prompt({
-    //        type: 'list',
-    //        name: 'bump',
-    //        message: 'What type of version bump would you like to do ? (current version is ' + pkg.version + ')',
-    //        choices: [
-    //            'patch (' + pkg.version + ' --> ' + semver.inc(pkg.version, 'patch') + ')',
-    //            'minor (' + pkg.version + ' --> ' + semver.inc(pkg.version, 'minor') + ')',
-    //            'major (' + pkg.version + ' --> ' + semver.inc(pkg.version, 'major') + ')',
-    //            'none (exit)'
-    //        ]
-    //    }, function(res) {
-    //        if(res.bump.match(/^patch/)) {
-    //            newVer = semver.inc(pkg.version, 'patch');
-    //        } else if(res.bump.match(/^minor/)) {
-    //            newVer = semver.inc(pkg.version, 'minor');
-    //        } else if(res.bump.match(/^major/)) {
-    //            newVer = semver.inc(pkg.version, 'major');
-    //        }
-    //    }));
-    newVer = semver.inc(pkg.version, 'major');
+    return gulp.src('')
+        .pipe(prompt.prompt({
+            type: 'list',
+            name: 'bump',
+            message: 'What type of version bump would you like to do ? (current version is ' + pkg.version + ')',
+            choices: [
+                'patch (' + pkg.version + ' --> ' + semver.inc(pkg.version, 'patch') + ')',
+                'minor (' + pkg.version + ' --> ' + semver.inc(pkg.version, 'minor') + ')',
+                'major (' + pkg.version + ' --> ' + semver.inc(pkg.version, 'major') + ')',
+                'none (exit)'
+            ]
+        }, function(res) {
+            if(res.bump.match(/^patch/)) {
+                newVer = semver.inc(pkg.version, 'patch');
+            } else if(res.bump.match(/^minor/)) {
+                newVer = semver.inc(pkg.version, 'minor');
+            } else if(res.bump.match(/^major/)) {
+                newVer = semver.inc(pkg.version, 'major');
+            }
+        }));
 });
 
 
