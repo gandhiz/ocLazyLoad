@@ -1,6 +1,6 @@
 /**
  * oclazyload - Load modules on demand (lazy load) with angularJS
- * @version v1.0.10
+ * @version v
  * @link https://github.com/ocombe/ocLazyLoad
  * @license MIT
  * @author Olivier Combe <olivier.combe@gmail.com>
@@ -882,7 +882,7 @@
                     filesCache.remove(path);
                     deferred.reject(new Error('Unable to load ' + path));
                 };
-                el.async = params.serie ? 0 : 1;
+                el.defer = params.serie ? 0 : 1;
 
                 var insertBeforeElem = anchor.lastChild;
                 if (params.insertBefore) {

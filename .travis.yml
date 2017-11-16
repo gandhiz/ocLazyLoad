@@ -23,5 +23,5 @@ deploy:
   on:
     tags: true
     all_branches: true
-    repo: ocombe/ocLazyLoad
+    repo: gandhiz/ocLazyLoad
 sudo: false

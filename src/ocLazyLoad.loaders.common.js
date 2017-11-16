@@ -66,7 +66,7 @@
                     filesCache.remove(path);
                     deferred.reject(new Error(`Unable to load ${ path }`));
                 };
-                el.async = params.serie ? 0 : 1;
+                el.defer = params.serie ? 0 : 1;
 
                 var insertBeforeElem = anchor.lastChild;
                 if(params.insertBefore) {
