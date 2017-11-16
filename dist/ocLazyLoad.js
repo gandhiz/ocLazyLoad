@@ -1,6 +1,6 @@
 /**
  * gandhiz.oclazyload - Load modules on demand (lazy load) with angularJS
- * @version v2.0.0
+ * @version v2.1.0
  * @link https://github.com/gandhiz/ocLazyLoad
  * @license MIT
  * @author Olivier Combe <olivier.combe@gmail.com>
@@ -818,7 +818,7 @@
     'use strict';
 
     angular.module('oc.lazyLoad').config(["$provide", function ($provide) {
-        $provide.decorator('$ocLazyLoad', ["$delegate", "$q", "$window", "$interval", function ($delegate, $q, $window, $interval) {
+        $provide.decorator('$ocLazyLoad', ["$delegate", "$q", "$window", "$interval", "$http", function ($delegate, $q, $window, $interval, $http) {
             var uaCssChecked = false,
                 useCssLoadPatch = false,
                 anchor = $window.document.getElementsByTagName('head')[0] || $window.document.getElementsByTagName('body')[0];
@@ -831,6 +831,9 @@
              * @returns promise
              */
             $delegate.buildElement = function buildElement(type, path, params) {
+                if (!params.processes) {
+                    params.processes = [];
+                }
                 var deferred = $q.defer(),
                     el,
                     loaded,
@@ -860,38 +863,69 @@
                         el = $window.document.createElement('link');
                         el.type = 'text/css';
                         el.rel = 'stylesheet';
-                        el.href = params.cache === false ? cacheBuster(path) : path;
+                        if (!params.defer) {
+                            el.href = params.cache === false ? cacheBuster(path) : path;
+                        }
                         break;
                     case 'js':
                         el = $window.document.createElement('script');
-                        el.src = params.cache === false ? cacheBuster(path) : path;
+                        if (!params.defer) {
+                            el.src = params.cache === false ? cacheBuster(path) : path;
+                        }
                         break;
                     default:
                         filesCache.remove(path);
                         deferred.reject(new Error('Requested type "' + type + '" is not known. Could not inject "' + path + '"'));
                         break;
                 }
-                el.onload = el['onreadystatechange'] = function (e) {
-                    if (el['readyState'] && !/^c|loade/.test(el['readyState']) || loaded) return;
-                    el.onload = el['onreadystatechange'] = null;
-                    loaded = 1;
-                    $delegate._broadcast('ocLazyLoad.fileLoaded', path);
-                    deferred.resolve(el);
-                };
-                el.onerror = function () {
-                    filesCache.remove(path);
-                    deferred.reject(new Error('Unable to load ' + path));
-                };
-                el.defer = params.serie ? 0 : 1;
 
-                var insertBeforeElem = anchor.lastChild;
-                if (params.insertBefore) {
-                    var element = angular.element(angular.isDefined(window.jQuery) ? params.insertBefore : document.querySelector(params.insertBefore));
-                    if (element && element.length > 0) {
-                        insertBeforeElem = element[0];
+                var insertDomElement = function insertDomElement() {
+                    var insertBeforeElem = anchor.lastChild;
+                    if (params.insertBefore) {
+                        var element = angular.element(angular.isDefined(window.jQuery) ? params.insertBefore : document.querySelector(params.insertBefore));
+                        if (element && element.length > 0) {
+                            insertBeforeElem = element[0];
+                        }
                     }
+                    insertBeforeElem.parentNode.insertBefore(el, insertBeforeElem);
+                };
+
+                if (params.defer) {
+                    $http.get(path).then(function (response) {
+                        params.processes[path] = {
+                            data: response.data,
+                            element: el,
+                            insertDomElement: insertDomElement
+                        };
+                        loaded = 1;
+                        $delegate._broadcast('ocLazyLoad.fileLoaded', path);
+                        deferred.resolve(el);
+                    })['catch'](function (data) {
+                        filesCache.remove(path);
+                        deferred.reject(new Error('Unable to load ' + path));
+                    });
+                } else {
+                    el.onload = el['onreadystatechange'] = function (e) {
+                        if (el['readyState'] && !/^c|loade/.test(el['readyState']) || loaded) return;
+                        el.onload = el['onreadystatechange'] = null;
+                        loaded = 1;
+                        $delegate._broadcast('ocLazyLoad.fileLoaded', path);
+                        deferred.resolve(el);
+                    };
+                    el.onerror = function () {
+                        filesCache.remove(path);
+                        deferred.reject(new Error('Unable to load ' + path));
+                    };
                 }
-                insertBeforeElem.parentNode.insertBefore(el, insertBeforeElem);
+                if (!params.serie && !params.defer && !params.defer2) {
+                    el.async = 1;
+                }
+                if (params.defer2) {
+                    el.defer = 1;
+                }
+                if (!params.defer) {
+                    insertDomElement();
+                }
 
                 /*
                  The event load or readystatechange doesn't fire in:
@@ -1072,6 +1106,10 @@
                     return $q.all(promises).then(function () {
                         return $delegate.filesLoader(config, params);
                     });
+                } else if (params.defer && params.files.length > 0) {
+                    return $q.all(promises).then(function () {
+                        return $delegate.appendDeferedJsFiles(config, params);
+                    });
                 } else {
                     return $q.all(promises)['finally'](function (res) {
                         $delegate.toggleWatch(false); // stop watching angular.module calls
@@ -1173,6 +1211,18 @@
                 });
 
                 return deferred.promise;
+            };
+
+            $delegate.appendDeferedJsFiles = function filesLoader(config, params) {
+                if (params.processes) {
+                    angular.forEach(params.files, function (path) {
+                        var process = params.processes[path];
+                        if (process) {
+                            process.element.appendChild(document.createTextNode(process.data));
+                            process.insertDomElement();
+                        }
+                    });
+                }
             };
 
             // return the patched service

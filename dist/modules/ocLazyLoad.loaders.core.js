@@ -124,6 +124,10 @@
                     return $q.all(promises).then(function () {
                         return $delegate.filesLoader(config, params);
                     });
+                } else if (params.defer && params.files.length > 0) {
+                    return $q.all(promises).then(function () {
+                        return $delegate.appendDeferedJsFiles(config, params);
+                    });
                 } else {
                     return $q.all(promises)['finally'](function (res) {
                         $delegate.toggleWatch(false); // stop watching angular.module calls
@@ -225,6 +229,18 @@
                 });
 
                 return deferred.promise;
+            };
+
+            $delegate.appendDeferedJsFiles = function filesLoader(config, params) {
+                if (params.processes) {
+                    angular.forEach(params.files, function (path) {
+                        var process = params.processes[path];
+                        if (process) {
+                            process.element.appendChild(document.createTextNode(process.data));
+                            process.insertDomElement();
+                        }
+                    });
+                }
             };
 
             // return the patched service

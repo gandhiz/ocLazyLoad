@@ -115,8 +115,10 @@
                     $delegate._$log.error(err);
                     deferred.reject(err);
                     return deferred.promise;
-                } else if(params.serie && params.files.length > 0) {
+                } else if (params.serie && params.files.length > 0) {
                     return $q.all(promises).then(() => $delegate.filesLoader(config, params));
+                } else if (params.defer && params.files.length > 0) {
+                    return $q.all(promises).then(() => $delegate.appendDeferedJsFiles(config, params));
                 } else {
                     return $q.all(promises).finally(res => {
                         $delegate.toggleWatch(false); // stop watching angular.module calls
@@ -217,6 +219,18 @@
 
                 return deferred.promise;
             };
+
+            $delegate.appendDeferedJsFiles = function filesLoader(config, params) {
+                if (params.processes) {
+                    angular.forEach(params.files, path => {
+                        var process = params.processes[path];
+                        if (process) {
+                            process.element.appendChild(document.createTextNode(process.data));
+                            process.insertDomElement();
+                        }
+                    });
+                }
+            }
 
             // return the patched service
             return $delegate;
