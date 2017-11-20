@@ -44,11 +44,13 @@
                 // Switch in case more content types are added later
                 switch(type) {
                     case 'css':
-                        el = $window.document.createElement('link');
-                        el.type = 'text/css';
-                        el.rel = 'stylesheet';
                         if (!params.defer) {
+                            el = $window.document.createElement('link');
+                            el.type = 'text/css';
+                            el.rel = 'stylesheet';
                             el.href = params.cache === false ? cacheBuster(path) : path;
+                        } else {
+                            el = $window.document.createElement('style');
                         }
                         break;
                     case 'js':

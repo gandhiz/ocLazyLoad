@@ -1,6 +1,6 @@
 /**
  * gandhiz.oclazyload - Load modules on demand (lazy load) with angularJS
- * @version v2.1.0
+ * @version v2.1.1
  * @link https://github.com/gandhiz/ocLazyLoad
  * @license MIT
  * @author Olivier Combe <olivier.combe@gmail.com>
@@ -860,11 +860,13 @@
                 // Switch in case more content types are added later
                 switch (type) {
                     case 'css':
-                        el = $window.document.createElement('link');
-                        el.type = 'text/css';
-                        el.rel = 'stylesheet';
                         if (!params.defer) {
+                            el = $window.document.createElement('link');
+                            el.type = 'text/css';
+                            el.rel = 'stylesheet';
                             el.href = params.cache === false ? cacheBuster(path) : path;
+                        } else {
+                            el = $window.document.createElement('style');
                         }
                         break;
                     case 'js':
