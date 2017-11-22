@@ -118,7 +118,10 @@
                 } else if (params.serie && params.files.length > 0) {
                     return $q.all(promises).then(() => $delegate.filesLoader(config, params));
                 } else if (params.defer && params.files.length > 0) {
-                    return $q.all(promises).then(() => $delegate.appendDeferedJsFiles(config, params));
+                    return $q.all(promises).then(() => $delegate.appendDeferedJsFiles(config, params)).finally(res => {
+                        $delegate.toggleWatch(false); // stop watching angular.module calls
+                        return res;
+                    });
                 } else {
                     return $q.all(promises).finally(res => {
                         $delegate.toggleWatch(false); // stop watching angular.module calls

@@ -127,6 +127,9 @@
                 } else if (params.defer && params.files.length > 0) {
                     return $q.all(promises).then(function () {
                         return $delegate.appendDeferedJsFiles(config, params);
+                    })['finally'](function (res) {
+                        $delegate.toggleWatch(false); // stop watching angular.module calls
+                        return res;
                     });
                 } else {
                     return $q.all(promises)['finally'](function (res) {

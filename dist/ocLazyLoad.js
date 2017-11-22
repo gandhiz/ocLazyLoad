@@ -1,6 +1,6 @@
 /**
  * gandhiz.oclazyload - Load modules on demand (lazy load) with angularJS
- * @version v2.1.1
+ * @version v2.1.3
  * @link https://github.com/gandhiz/ocLazyLoad
  * @license MIT
  * @author Olivier Combe <olivier.combe@gmail.com>
@@ -1111,6 +1111,9 @@
                 } else if (params.defer && params.files.length > 0) {
                     return $q.all(promises).then(function () {
                         return $delegate.appendDeferedJsFiles(config, params);
+                    })['finally'](function (res) {
+                        $delegate.toggleWatch(false); // stop watching angular.module calls
+                        return res;
                     });
                 } else {
                     return $q.all(promises)['finally'](function (res) {
