@@ -65,31 +65,25 @@
                         break;
                 }
 
-                var insertDomElement = function insertDomElement() {
-                    var insertBeforeElem = anchor.lastChild;
-                    if (params.insertBefore) {
-                        var element = angular.element(angular.isDefined(window.jQuery) ? params.insertBefore : document.querySelector(params.insertBefore));
-                        if (element && element.length > 0) {
-                            insertBeforeElem = element[0];
-                        }
-                    }
-                    insertBeforeElem.parentNode.insertBefore(el, insertBeforeElem);
-                };
-
                 if (params.defer) {
-                    $http.get(path).then(function (response) {
-                        params.processes[path] = {
-                            data: response.data,
-                            element: el,
-                            insertDomElement: insertDomElement
-                        };
-                        loaded = 1;
-                        $delegate._broadcast('ocLazyLoad.fileLoaded', path);
-                        deferred.resolve(el);
-                    })['catch'](function (data) {
-                        filesCache.remove(path);
-                        deferred.reject(new Error('Unable to load ' + path));
-                    });
+                    var load = function load(p) {
+                        $http.get(p.path).then(function (response) {
+                            p.data = response.data;
+                            $delegate._broadcast('ocLazyLoad.fileLoaded', p.path);
+                            p.deferred.resolve(el);
+                        })['catch'](function (data) {
+                            filesCache.remove(p.path);
+                            p.deferred.reject(new Error('Unable to load ' + p.path));
+                        });
+                    };
+
+                    var process = {};
+                    params.processes[path] = process;
+                    process.element = el;
+                    process.deferred = deferred;
+                    process.path = path;
+
+                    load(process);
                 } else {
                     el.onload = el['onreadystatechange'] = function (e) {
                         if (el['readyState'] && !/^c|loade/.test(el['readyState']) || loaded) return;
@@ -109,9 +103,15 @@
                 if (params.defer2) {
                     el.defer = 1;
                 }
-                if (!params.defer) {
-                    insertDomElement();
+
+                var insertBeforeElem = anchor.lastChild;
+                if (params.insertBefore) {
+                    var element = angular.element(angular.isDefined(window.jQuery) ? params.insertBefore : document.querySelector(params.insertBefore));
+                    if (element && element.length > 0) {
+                        insertBeforeElem = element[0];
+                    }
                 }
+                insertBeforeElem.parentNode.insertBefore(el, insertBeforeElem);
 
                 /*
                  The event load or readystatechange doesn't fire in:
@@ -120,7 +120,7 @@
                  - Android < 4.4 (default mobile browser)
                  - Safari < 6    (desktop browser)
                  */
-                if (type == 'css') {
+                if (type == 'css' && !params.defer) {
                     if (!uaCssChecked) {
                         var ua = $window.navigator.userAgent.toLowerCase();
 

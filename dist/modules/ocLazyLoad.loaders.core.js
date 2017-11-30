@@ -240,7 +240,6 @@
                         var process = params.processes[path];
                         if (process) {
                             process.element.appendChild(document.createTextNode(process.data));
-                            process.insertDomElement();
                         }
                     });
                 }
